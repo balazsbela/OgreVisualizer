@@ -75,9 +75,9 @@ void VisualizerApplication::createScene(void)
 
 		for(int j=0;j<16;j++) {
 			m_nodes[i][j] = CubeGenerator::getInstance() ->generateCube(mSceneMgr,ColourValue(r_base-(j*(r_base/15)),j*(1.0/15),b_base),Vector3(x, 0, z));
-			x+=35;
+			x+=45;
 		}
-		z += 35;
+		z += 45;
 		x = 0;
 	}
 
@@ -107,7 +107,7 @@ int VisualizerApplication :: playMusic(void) {
 		Ogre::LogManager::getSingletonPtr()->logMessage(Mix_GetError());
 	}
 
-	if(Mix_PlayMusic(music,-1) < 0) {
+	if(Mix_PlayMusic(music,0) < 0) {
 		Ogre::LogManager::getSingletonPtr()->logMessage(Mix_GetError());
 	}
 
@@ -180,13 +180,10 @@ void VisualizerApplication :: visualize(int chan,int* stream,int len) {
 				m_spec[i] = sqrt( pow((out[i][0]),2) + pow((out[i][1]),2) );
 			//	std::cout << i <<":" << m_spec[i] << "\n";
 	}
-	 SDL_SemPost(m_sem);
+	fftw_destroy_plan(p);
+	SDL_SemPost(m_sem);
 
 	renderFreq();
-
-
-	fftw_destroy_plan(p);
-
 
 }
 
@@ -227,9 +224,14 @@ void VisualizerApplication :: adjustNodes() {
 	float temp;
 		for(int i=0;i<16;i++) {
 			for(int j=0;j<16;j++) {
-				//std::cout << m_heights[i][j] / 2.0f<< "\n";
 				if(m_nodes[i][j]) {
-					temp = m_heights[i][j]/2.0f;
+					temp = m_heights[i][j]/2.3f;
+					if(temp > 0.5) {
+						temp = m_heights[i][j]/2.3f - 0.5;
+					}
+					if(temp < 0.2) {
+						temp = 0;
+					}
 					pos = m_nodes[i][j] -> getPosition();
 					m_nodes[i][j] -> setScale(Vector3(0.1,temp,0.1));
 					m_nodes[i][j] -> setPosition(pos.x,temp*100/2.0f,pos.z);
