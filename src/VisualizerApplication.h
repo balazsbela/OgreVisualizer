@@ -23,31 +23,32 @@ This source file is part of the
 #include "SDL/SDL_thread.h"
 #include "CubeGenerator.h"
 #include <fftw3.h>
+#include "VNodeListener.h"
 
 
 class VisualizerApplication : public BaseApplication
 {
 public:
-	static VisualizerApplication* getInstance();
+	VisualizerApplication();
 	virtual ~VisualizerApplication(void);
     void visualize(int chan,int* stream,int len);
     int playMusic(void);
+    void lock();
+    void unlock();
+
 protected:
     virtual void createScene(void);
 private:
-    VisualizerApplication(void);
-    static VisualizerApplication* instance;
 
     void renderFreq();
     void adjustNodes();
+
 
     SDL_sem* m_sem;
     long int m_spec[256];
     float m_heights[16][16];
     SceneNode* m_nodes[16][16];
     fftw_complex *in, *out;
-    SDL_Thread* musicThread;
-
 };
 
 #endif // #ifndef __TutorialApplication_h_

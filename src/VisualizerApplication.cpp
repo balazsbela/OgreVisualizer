@@ -6,15 +6,6 @@
 
 using namespace Ogre;
 
-VisualizerApplication* VisualizerApplication :: instance;
-
-VisualizerApplication* VisualizerApplication :: getInstance() {
-	if(instance == NULL) {
-		instance = new VisualizerApplication();
-	}
-	return instance;
-}
-
 VisualizerApplication::VisualizerApplication(void)
 {
 	m_sem = SDL_CreateSemaphore(1);
@@ -22,28 +13,30 @@ VisualizerApplication::VisualizerApplication(void)
     out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 512);
 
 }
- 
+
 VisualizerApplication::~VisualizerApplication(void)
 {
 	Mix_UnregisterAllEffects(0);
 	Mix_HaltMusic();
 	Mix_CloseAudio();
 
-	SDL_WaitThread(musicThread,NULL);
-
 	SDL_DestroySemaphore(m_sem);
-	if(instance) {
-		delete instance;
-	}
+
 	windowClosed(mWindow);
 	fftw_free(in);
 	fftw_free(out);
-
 }
  
 void musicData (int chan, void *stream, int len, void *udata)
 {
-	VisualizerApplication::getInstance()->visualize(chan,(int*)stream,len);
+
+	if(udata) {
+		VisualizerApplication *vapp = (VisualizerApplication*) udata;
+		vapp -> lock();
+		vapp -> visualize(chan,(int*) stream,len);
+		vapp -> unlock();
+	}
+
 }
 
 
@@ -52,16 +45,11 @@ void musicDone(int chan, void *stream)
 	std::cout << "Music stopped playing!";
 }
 
-int play(void*) {
-	VisualizerApplication :: getInstance() -> playMusic();
-	return 0;
-}
-
 //-------------------------------------------------------------------------------------
 void VisualizerApplication::createScene(void)
 {
-    mCamera->setPosition(Ogre::Vector3(-150,156,-174));
-    mCamera->lookAt(Ogre::Vector3(10,40,-10));
+ 	mCamera->setPosition(Ogre::Vector3(190,272,-465));
+	mCamera->lookAt(Ogre::Vector3(0.015,0.98,0.16));
 
 	int x = 0;
 	int z = 0;
@@ -88,7 +76,7 @@ void VisualizerApplication::createScene(void)
 	Ogre::Light* l = mSceneMgr->createLight("MainLight");
 	l->setPosition(20,80,50);
 
-	musicThread = SDL_CreateThread(play, NULL);
+	playMusic();
 }
 
 
@@ -111,7 +99,7 @@ int VisualizerApplication :: playMusic(void) {
 		Ogre::LogManager::getSingletonPtr()->logMessage(Mix_GetError());
 	}
 
-	if(Mix_RegisterEffect(MIX_CHANNEL_POST,musicData,musicDone,NULL) < 0) {
+	if(Mix_RegisterEffect(MIX_CHANNEL_POST,musicData,musicDone,this) < 0) {
 		//Could not register effect
 		Ogre::LogManager::getSingletonPtr()->logMessage(Mix_GetError());
 	}
@@ -129,8 +117,6 @@ void VisualizerApplication :: visualize(int chan,int* stream,int len) {
 	 }
 
 	 int cut = len / 512;
-
-	 SDL_SemWait(m_sem);
 
 	 int j = 0;
 	 for(int i=0;i<len;i+=cut) {
@@ -153,13 +139,8 @@ void VisualizerApplication :: visualize(int chan,int* stream,int len) {
 		 }
 	 }
 
-	 SDL_SemPost(m_sem);
-
-
 	 p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
 	 fftw_execute(p);
-
-	 SDL_SemWait(m_sem);
 
 	/*std::cout << "\n\n";
 	std::cout << len << " " << cut << " " << j <<"\n";
@@ -181,7 +162,6 @@ void VisualizerApplication :: visualize(int chan,int* stream,int len) {
 			//	std::cout << i <<":" << m_spec[i] << "\n";
 	}
 	fftw_destroy_plan(p);
-	SDL_SemPost(m_sem);
 
 	renderFreq();
 
@@ -193,7 +173,6 @@ void VisualizerApplication :: renderFreq() {
 	double scale = 1.0 / log(256.0);
 	int xscale[] = {0, 1, 2, 3, 5, 7, 10, 14, 20, 28, 40, 54, 74, 101, 137, 187, 255};
 
-	SDL_SemWait(m_sem);
 	for(y = 15; y > 0; y--)
 			for(i = 0; i < 16; i++)
 				m_heights[y][i] = m_heights[y - 1][i];
@@ -213,13 +192,10 @@ void VisualizerApplication :: renderFreq() {
 			m_heights[0][i] = val;
 		}
 
-	SDL_SemPost(m_sem);
-
 	adjustNodes();
 }
 
 void VisualizerApplication :: adjustNodes() {
-	SDL_SemWait(m_sem);
 	Vector3 pos;
 	float temp;
 		for(int i=0;i<16;i++) {
@@ -233,8 +209,14 @@ void VisualizerApplication :: adjustNodes() {
 						temp = 0;
 					}
 					pos = m_nodes[i][j] -> getPosition();
+				/*	m_vnodeListener.clearUpdated();
+					m_nodes[i][j] -> setListener(&m_vnodeListener);*/
+
+
 					m_nodes[i][j] -> setScale(Vector3(0.1,temp,0.1));
 					m_nodes[i][j] -> setPosition(pos.x,temp*100/2.0f,pos.z);
+					//m_nodes[i][j] -> setScale(Vector3(0.1,0,0.1));
+					//wait while node is updated;
 					//m_heights[i][j] = 0;
 				}
 				else {
@@ -242,5 +224,17 @@ void VisualizerApplication :: adjustNodes() {
 				}
 			}
 		}
+}
+
+
+void VisualizerApplication :: lock() {
+	SDL_SemWait(m_sem);
+}
+
+
+void VisualizerApplication :: unlock() {
 	SDL_SemPost(m_sem);
 }
+
+
+

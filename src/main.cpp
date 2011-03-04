@@ -17,8 +17,8 @@ extern "C" {
 #endif
     {
         // Create application object
-        VisualizerApplication* app = VisualizerApplication::getInstance();
-
+        //VisualizerApplication* app = VisualizerApplication::getInstance();
+    	VisualizerApplication* app = new VisualizerApplication();
         try
         {
             app->go();
