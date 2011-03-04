@@ -23,8 +23,6 @@ This source file is part of the
 #include "SDL/SDL_thread.h"
 #include "CubeGenerator.h"
 #include <fftw3.h>
-#include "VNodeListener.h"
-
 
 class VisualizerApplication : public BaseApplication
 {
