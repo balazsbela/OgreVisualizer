@@ -10,7 +10,7 @@ VisualizerApplication::VisualizerApplication(void)
 {
 	m_sem = SDL_CreateSemaphore(1);
 	in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 512);
-    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 512);
+        out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 512);
 
 }
 
