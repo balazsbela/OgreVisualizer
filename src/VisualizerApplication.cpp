@@ -1,4 +1,3 @@
-#include "VisualizerApplication.h"
 #include "SDL/SDL_mixer.h"
 #include "SDL/SDL_events.h"
 #include "SDL/SDL_audio.h"
