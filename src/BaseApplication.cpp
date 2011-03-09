@@ -18,6 +18,7 @@ This source file is part of the
 #include "BaseApplication.h"
 #include <string>
 #include <sstream>
+#include <unistd.h>
 
 //-------------------------------------------------------------------------------------
 BaseApplication::BaseApplication(void)
@@ -29,14 +30,14 @@ BaseApplication::BaseApplication(void)
     mPluginsCfg(Ogre::StringUtil::BLANK),
     mTrayMgr(0),
     mCameraMan(0),
-    mDetailsPanel(0),
-    mCursorWasVisible(false),
-    mShutDown(false),
-    mInputManager(0),
-    mMouse(0),
-    mKeyboard(0),
-    mAnimationState(0)
+    mDetailsPanel(0)
 {
+	mKeyboard = 0;
+	mMouse = 0;
+	mInputManager = 0;
+	mShutDown = false;
+	mCursorWasVisible = false;
+	mAnimationState = 0;
 }
 
 //-------------------------------------------------------------------------------------
@@ -431,6 +432,13 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
 
 
 bool BaseApplication::frameStarted(const Ogre::FrameEvent &evt) {
+	lock();
+	//FrameRate Limit
+	/*double TargetFps = 20;
+	double wait = 1/TargetFps - evt.timeSinceLastFrame;
+	if(wait > 0)
+	   usleep((wait * 1000000.0)+0.5);*/
+
     if(mAnimationState) {
        std::stringstream oss;
        oss << evt.timeSinceLastFrame;
@@ -440,5 +448,19 @@ bool BaseApplication::frameStarted(const Ogre::FrameEvent &evt) {
 
        return true;
     }
-    //return false;
+    return true;
+}
+
+bool BaseApplication::frameEnded(const Ogre::FrameEvent &evt) {
+	unlock();
+	return true;
+}
+
+void BaseApplication :: lock() {
+	SDL_SemWait(m_sem);
+}
+
+
+void BaseApplication :: unlock() {
+	SDL_SemPost(m_sem);
 }

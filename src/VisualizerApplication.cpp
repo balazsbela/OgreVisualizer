@@ -10,7 +10,7 @@ VisualizerApplication::VisualizerApplication(void)
 {
 	m_sem = SDL_CreateSemaphore(1);
 	in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 512);
-        out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 512);
+    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 512);
 
 }
 
@@ -29,14 +29,12 @@ VisualizerApplication::~VisualizerApplication(void)
  
 void musicData (int chan, void *stream, int len, void *udata)
 {
-
 	if(udata) {
 		VisualizerApplication *vapp = (VisualizerApplication*) udata;
 		vapp -> lock();
 		vapp -> visualize(chan,(int*) stream,len);
 		vapp -> unlock();
 	}
-
 }
 
 
@@ -227,14 +225,6 @@ void VisualizerApplication :: adjustNodes() {
 }
 
 
-void VisualizerApplication :: lock() {
-	SDL_SemWait(m_sem);
-}
-
-
-void VisualizerApplication :: unlock() {
-	SDL_SemPost(m_sem);
-}
 
 
 

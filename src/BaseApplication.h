@@ -34,6 +34,9 @@ This source file is part of the
 #include <SdkTrays.h>
 #include <SdkCameraMan.h>
 
+#include "SDL/SDL.h"
+#include "SDL/SDL_thread.h"
+
 class BaseApplication : public Ogre::FrameListener, public Ogre::WindowEventListener, public OIS::KeyListener, public OIS::MouseListener, OgreBites::SdkTrayListener
 {
 public:
@@ -41,7 +44,8 @@ public:
     virtual ~BaseApplication(void);
 
     virtual void go(void);
-
+    void lock();
+    void unlock();
 protected:
     virtual bool setup();
     virtual bool configure(void);
@@ -56,7 +60,7 @@ protected:
     virtual void loadResources(void);
 
     virtual bool frameStarted(const Ogre::FrameEvent &evt);
-
+    virtual bool frameEnded(const Ogre::FrameEvent &evt);
     // Ogre::FrameListener
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 
@@ -93,6 +97,10 @@ protected:
     OIS::InputManager* mInputManager;
     OIS::Mouse*    mMouse;
     OIS::Keyboard* mKeyboard;
+
+    //SDL_Semaphore
+    SDL_sem* m_sem;
+
 };
 
 #endif // #ifndef __BaseApplication_h_
