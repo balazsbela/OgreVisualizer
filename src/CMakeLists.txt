@@ -154,7 +154,7 @@ include_directories(${FFTW3_INCLUDE_DIRS} ${SDL_INCLUDE_DIR} ${SDLMIXER_INCLUDE_
 add_executable(OgreVisualizer WIN32 ${HDRS} ${SRCS})
  
 set_target_properties(OgreVisualizer PROPERTIES DEBUG_POSTFIX _d)
-target_link_libraries(OgreVisualizer ${BOOST_SYSTEM_LIBRARY} ${FFTW3_LIBRARY} ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
+target_link_libraries(OgreVisualizer ${Boost_SYSTEM_LIBRARY} ${FFTW3_LIBRARY} ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
  
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/media)
