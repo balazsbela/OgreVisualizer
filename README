@@ -2,3 +2,9 @@
 
 
 Screenshot: http://2.bp.blogspot.com/-yPEVTCwzq_w/TXE32p_QtWI/AAAAAAAAAMA/-Vohd_xIW8g/s1600/scr28.png
+
+Compiling: 
+	    cmake .
+	    make
+	    
+And copy the resulting binary into the Release folder.
