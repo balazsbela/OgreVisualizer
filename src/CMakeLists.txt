@@ -1,250 +1,248 @@
-cmake_minimum_required(version 2.6)
+cmake_minimum_required(VERSION 2.6)
  
-project(ogrevisualizer)
+project(OgreVisualizer)
  
-if(win32)
-	set(cmake_module_path "$env{ogre_home}/cmake/;${cmake_module_path}")
-	set(ogre_samples_includepath
-		$env{ogre_home}/samples/include
+if(WIN32)
+	set(CMAKE_MODULE_PATH "$ENV{OGRE_HOME}/CMake/;${CMAKE_MODULE_PATH}")
+	set(OGRE_SAMPLES_INCLUDEPATH
+		$ENV{OGRE_HOME}/Samples/include
 	)
-endif(win32)
+endif(WIN32)
  
-if(unix)
-	if(exists "/usr/local/lib/ogre/cmake")
+if(UNIX)
+	if(EXISTS "/usr/local/lib/OGRE/cmake")
 
-	  set(cmake_module_path "/usr/local/lib/ogre/cmake/;${cmake_module_path}")
-	  set(ogre_samples_includepath "/usr/local/share/ogre/samples/common/include/") # we could just *assume* that developers uses this basepath : /usr/local
+	  set(CMAKE_MODULE_PATH "/usr/local/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
+	  set(OGRE_SAMPLES_INCLUDEPATH "/usr/local/share/OGRE/samples/Common/include/") # We could just *assume* that developers uses this basepath : /usr/local
 
-	elseif(exists "/usr/lib/ogre/cmake")
+	elseif(EXISTS "/usr/lib/OGRE/cmake")
 
-	  set(cmake_module_path "/usr/lib/ogre/cmake/;${cmake_module_path}")
-	  set(ogre_samples_includepath "/usr/share/ogre/samples/common/include/") # otherwise, this one
+	  set(CMAKE_MODULE_PATH "/usr/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
+	  set(OGRE_SAMPLES_INCLUDEPATH "/usr/share/OGRE/samples/Common/include/") # Otherwise, this one
 
 	else ()
-	  message(send_error "failed to find module path.")
-	endif(exists "/usr/local/lib/ogre")
-endif(unix)
+	  message(SEND_ERROR "Failed to find module path.")
+	endif(EXISTS "/usr/local/lib/OGRE")
+endif(UNIX)
  
-if (cmake_build_type strequal "")
-  # cmake defaults to leaving cmake_build_type empty. this screws up
+if (CMAKE_BUILD_TYPE STREQUAL "")
+  # CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up
   # differentiation between debug and release builds.
-  set(cmake_build_type "relwithdebinfo" cache string "choose the type of build, options are: none (cmake_cxx_flags or cmake_c_flags used) debug release relwithdebinfo minsizerel." force)
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif ()
  
-set(cmake_debug_postfix "_d")
+set(CMAKE_DEBUG_POSTFIX "_d")
  
-set(cmake_install_prefix "${cmake_current_binary_dir}/dist")
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
  
-find_package(ogre required)
+find_package(OGRE REQUIRED)
  
-#if(not "${ogre_version_name}" strequal "cthugha")
-#  message(send_error "you need ogre 1.7 cthugha to build this.")
+#if(NOT "${OGRE_VERSION_NAME}" STREQUAL "Cthugha")
+#  message(SEND_ERROR "You need Ogre 1.7 Cthugha to build this.")
 #endif()
  
-find_package(ois required)
+find_package(OIS REQUIRED)
  
-if(not ois_found)
-	message(send_error "failed to find ois.")
+if(NOT OIS_FOUND)
+	message(SEND_ERROR "Failed to find OIS.")
 endif()
  
-# find boost
-if (not ogre_build_platform_iphone)
-	if (win32 or apple)
-		set(boost_use_static_libs true)
+# Find Boost
+if (NOT OGRE_BUILD_PLATFORM_IPHONE)
+	if (WIN32 OR APPLE)
+		set(Boost_USE_STATIC_LIBS TRUE)
 	else ()
-		# statically linking boost to a dynamic ogre build doesn't work on linux 64bit
-		set(boost_use_static_libs ${ogre_static})
+		# Statically linking boost to a dynamic Ogre build doesn't work on Linux 64bit
+		set(Boost_USE_STATIC_LIBS ${OGRE_STATIC})
 	endif ()
-	if (mingw)
-		# this is probably a bug in cmake: the boost find module tries to look for
-		# boost libraries with name libboost_*, but cmake already prefixes library
-		# search names with "lib". this is the workaround.
-		set(cmake_find_library_prefixes ${cmake_find_library_prefixes} "")
+	if (MINGW)
+		# this is probably a bug in CMake: the boost find module tries to look for
+		# boost libraries with name libboost_*, but CMake already prefixes library
+		# search names with "lib". This is the workaround.
+		set(CMAKE_FIND_LIBRARY_PREFIXES ${CMAKE_FIND_LIBRARY_PREFIXES} "")
 	endif ()
-	set(boost_additional_versions "1.51" "1.51.0" "1.50" "1.50.0" "1.49" "1.49.0" "1.48" "1.48.0" "1.47" "1.47.0" "1.46" "1.46.0" "1.45" "1.45.0" "1.44" "1.44.0" "1.42" "1.42.0" "1.41.0" "1.41" "1.40.0" "1.40")
-	# components that need linking (nb does not include header-only components like bind)
-	set(ogre_boost_components system thread date_time)
-	find_package(boost components ${ogre_boost_components} quiet)
-	if (not boost_found)
-		# try again with the other type of libs
-		set(boost_use_static_libs not ${boost_use_static_libs})
-		find_package(boost components ${ogre_boost_components} quiet)
+	set(Boost_ADDITIONAL_VERSIONS "1.44" "1.44.0" "1.42" "1.42.0" "1.41.0" "1.41" "1.40.0" "1.40" "1.39.0" "1.39" "1.38.0" "1.38" "1.37.0" "1.37" )
+	# Components that need linking (NB does not include header-only components like bind)
+	set(OGRE_BOOST_COMPONENTS system thread date_time)
+	find_package(Boost COMPONENTS ${OGRE_BOOST_COMPONENTS} QUIET)
+	if (NOT Boost_FOUND)
+		# Try again with the other type of libs
+		set(Boost_USE_STATIC_LIBS NOT ${Boost_USE_STATIC_LIBS})
+		find_package(Boost COMPONENTS ${OGRE_BOOST_COMPONENTS} QUIET)
 	endif()
-	find_package(boost quiet)
- 
+	find_package(Boost QUIET)
+	
 	#find_sdl
-	find_package(sdl required)
-	if(sdl_found)	  
-	  message( "sdl found" )
-	else(sdl_found)
+	find_package(SDL REQUIRED)
+	if(SDL_FOUND)	  
+	  message( "SDL FOUND" )
+	else(SDL_FOUND)
 	  message( fatal_error "error: sdl library not found, it is required to build")
 	  message( "make sure the path is correctly defined or set the envirnomental variable sdldir to the correct location" )
-	endif(sdl_found)
+	endif(SDL_FOUND)
 	
 	# find sdl_mixer
-	find_package(sdl_mixer required)
-	if(sdlmixer_found)
-	  message( "sdl mixer found" )
-	else(sdlmixer_found)
+	find_package(SDL_mixer REQUIRED)
+	if(SDLMIXER_FOUND)
+	  message( "SDL MIXER FOUND" )
+	else(SDLMIXER_FOUND)
 	    message( "error: sdl_mixer library not found, it was selected to be included")
-	endif(sdlmixer_found)
+	endif(SDLMIXER_FOUND)
  
         #fftw3        
-	find_path(fftw3_include_dir
-		names
+	find_path(FFTW3_INCLUDE_DIR
+		NAMES
 			fftw3.h
-		paths
+		PATHS
 			/usr/include
 			/usr/local/include
 			/opt/local/include
 			/sw/include
 	)
 
-	find_library(fftw3_library
-		names
+	find_library(FFTW3_LIBRARY
+		NAMES
 			fftw3
-		paths
+		PATHS
 			/usr/lib
 			/usr/local/lib
 			/opt/local/lib
 			/sw/lib
 	)
 	
-	set(fftw3_include_dirs
-		${fftw3_include_dir}
+	set(FFTW3_INCLUDE_DIRS
+		${FFTW3_INCLUDE_DIR}
 	)
-	set(fftw3_libraries
-		${fftw3_library}
+	set(FFTW3_LIBRARIES
+		${FFTW3_LIBRARY}
 	)
 
-	if (fftw3_include_dirs and fftw3_libraries)
-		set(fftw3_found true)
-	endif (fftw3_include_dirs and fftw3_libraries)
+	if (FFTW3_INCLUDE_DIRS AND FFTW3_LIBRARIES)
+		set(FFTW3_FOUND true)
+	endif (FFTW3_INCLUDE_DIRS AND FFTW3_LIBRARIES)
 
-	if (fftw3_found)
-		message("fftw found")
-	else (fftw3_found)		
-		message(fatal_error "could not find fftw3")
-	endif (fftw3_found)
+	if (FFTW3_FOUND)
+		message("FFTW FOUND")
+	else (FFTW3_FOUND)		
+		message(fatal_error "COULD NOT FIND FFTW3")
+	endif (FFTW3_FOUND)
  
-	# set up referencing of boost
-	include_directories(${boost_include_dir})
-	add_definitions(-dboost_all_no_lib)
-	set(ogre_libraries ${ogre_libraries} ${boost_libraries})
+	# Set up referencing of Boost
+	include_directories(${Boost_INCLUDE_DIR})
+	add_definitions(-DBOOST_ALL_NO_LIB)
+	set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${Boost_LIBRARIES})
 endif()
  
-set(hdrs
-	./baseapplication.h
-	./cubegenerator.h
-	./visualizerapplication.h
+set(HDRS
+	./BaseApplication.h
+	./CubeGenerator.h
+	./VisualizerApplication.h
 )
  
-set(srcs
-	./baseapplication.cpp
-	./cubegenerator.cpp
-	./visualizerapplication.cpp
+set(SRCS
+	./BaseApplication.cpp
+	./CubeGenerator.cpp
+	./VisualizerApplication.cpp
 	./main.cpp
 )
-
-
-include_directories(${fftw3_include_dirs} ${sdl_include_dir} ${sdlmixer_include_dir} ${ois_include_dirs}
-	${ogre_include_dirs}
-	${ogre_samples_includepath}
+ 
+include_directories(${FFTW3_INCLUDE_DIRS} ${SDL_INCLUDE_DIR} ${SDLMIXER_INCLUDE_DIR}  ${OIS_INCLUDE_DIRS}
+	${OGRE_INCLUDE_DIRS}
+	${OGRE_SAMPLES_INCLUDEPATH}
 )
  
-add_executable(ogreapp win32 ${hdrs} ${srcs})
+add_executable(OgreVisualizer WIN32 ${HDRS} ${SRCS})
  
-set_target_properties(ogreapp properties debug_postfix _d)
-	 
-target_link_libraries(ogreapp ${boost_system_library} ${fftw3_library} ${sdl_library} ${sdlmixer_library} ${ogre_libraries} ${ois_libraries})
+set_target_properties(OgreVisualizer PROPERTIES DEBUG_POSTFIX _d)
+target_link_libraries(OgreVisualizer ${BOOST_SYSTEM_LIBRARY} ${FFTW3_LIBRARY} ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
  
-file(make_directory ${cmake_current_binary_dir}/dist/bin)
-file(make_directory ${cmake_current_binary_dir}/dist/media)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/media)
  
 # post-build copy for win32
-if(win32 and not mingw)
-	add_custom_command( target ogreapp pre_build
-		command if not exist .\\dist\\bin mkdir .\\dist\\bin )
-	add_custom_command( target ogreapp post_build
-		command copy \"$(targetpath)\" .\\dist\\bin )
-endif(win32 and not mingw)
+if(WIN32 AND NOT MINGW)
+	add_custom_command( TARGET OgreVisualizer PRE_BUILD
+		COMMAND if not exist .\\dist\\bin mkdir .\\dist\\bin )
+	add_custom_command( TARGET OgreVisualizer POST_BUILD
+		COMMAND copy \"$(TargetPath)\" .\\dist\\bin )
+endif(WIN32 AND NOT MINGW)
 
-if(mingw or unix)
-	set(executable_output_path ${project_binary_dir}/dist/bin)
-endif(mingw or unix)
+if(MINGW OR UNIX)
+	set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/dist/bin)
+endif(MINGW OR UNIX)
  
-if(win32)
+if(WIN32)
  
-	install(targets ogreapp
-		runtime destination bin
-		configurations all)
+	install(TARGETS OgreVisualizer
+		RUNTIME DESTINATION bin
+		CONFIGURATIONS All)
  
-	install(directory ${cmake_source_dir}/dist/media
-		destination ./
-		configurations release relwithdebinfo debug
+	install(DIRECTORY ${CMAKE_SOURCE_DIR}/dist/Media
+		DESTINATION ./
+		CONFIGURATIONS Release RelWithDebInfo Debug
 	)
  
-	install(files ${cmake_source_dir}/dist/bin/plugins.cfg
-		${cmake_source_dir}/dist/bin/resources.cfg
-		destination bin
-		configurations release relwithdebinfo
+	install(FILES ${CMAKE_SOURCE_DIR}/dist/bin/plugins.cfg
+		${CMAKE_SOURCE_DIR}/dist/bin/resources.cfg
+		DESTINATION bin
+		CONFIGURATIONS Release RelWithDebInfo
 	)
  
-	install(files ${cmake_source_dir}/dist/bin/plugins_d.cfg
-		${cmake_source_dir}/dist/bin/resources_d.cfg
-		destination bin
-		configurations debug
+	install(FILES ${CMAKE_SOURCE_DIR}/dist/bin/plugins_d.cfg
+		${CMAKE_SOURCE_DIR}/dist/bin/resources_d.cfg
+		DESTINATION bin
+		CONFIGURATIONS Debug
 	)
  
-        # note: for the 1.7.1 sdk the ois dll is called ois.dll instead of libois.dll
+        # NOTE: for the 1.7.1 sdk the OIS dll is called OIS.dll instead of libOIS.dll
         # so you'll have to change that to make it work with 1.7.1
-	install(files ${ogre_plugin_dir_rel}/ogremain.dll
-		${ogre_plugin_dir_rel}/rendersystem_direct3d9.dll
-		${ogre_plugin_dir_rel}/rendersystem_gl.dll
-		${ogre_plugin_dir_rel}/libois.dll
-		destination bin
-		configurations release relwithdebinfo
+	install(FILES ${OGRE_PLUGIN_DIR_REL}/OgreMain.dll
+		${OGRE_PLUGIN_DIR_REL}/RenderSystem_Direct3D9.dll
+		${OGRE_PLUGIN_DIR_REL}/RenderSystem_GL.dll
+		${OGRE_PLUGIN_DIR_REL}/libOIS.dll
+		DESTINATION bin
+		CONFIGURATIONS Release RelWithDebInfo
 	)
  
-	install(files ${ogre_plugin_dir_dbg}/ogremain_d.dll
-		${ogre_plugin_dir_dbg}/rendersystem_direct3d9_d.dll
-		${ogre_plugin_dir_dbg}/rendersystem_gl_d.dll
-		${ogre_plugin_dir_dbg}/libois_d.dll
-		destination bin
-		configurations debug
+	install(FILES ${OGRE_PLUGIN_DIR_DBG}/OgreMain_d.dll
+		${OGRE_PLUGIN_DIR_DBG}/RenderSystem_Direct3D9_d.dll
+		${OGRE_PLUGIN_DIR_DBG}/RenderSystem_GL_d.dll
+		${OGRE_PLUGIN_DIR_DBG}/libOIS_d.dll
+		DESTINATION bin
+		CONFIGURATIONS Debug
 	)
  
    # as of sdk 1.7.2 we need to copy the boost dll's as well
    # because they're not linked statically (it worked with 1.7.1 though)
-   install(files ${boost_date_time_library_release}
-      ${boost_thread_library_release}
-      destination bin
-      configurations release relwithdebinfo
+   install(FILES ${Boost_DATE_TIME_LIBRARY_RELEASE}
+      ${Boost_THREAD_LIBRARY_RELEASE}
+      DESTINATION bin
+      CONFIGURATIONS Release RelWithDebInfo
    )
  
-   install(files ${boost_date_time_library_debug}
-      ${boost_thread_library_debug}
-      destination bin
-      configurations debug
+   install(FILES ${Boost_DATE_TIME_LIBRARY_DEBUG}
+      ${Boost_THREAD_LIBRARY_DEBUG}
+      DESTINATION bin
+      CONFIGURATIONS Debug
    )
-endif(win32)
+endif(WIN32)
 
-if(unix)
+if(UNIX)
  
-	install(targets ogreapp
-		runtime destination bin
-		configurations all)
+	install(TARGETS OgreVisualizer
+		RUNTIME DESTINATION bin
+		CONFIGURATIONS All)
  
-	install(directory ${cmake_source_dir}/dist/media
-		destination ./
-		configurations release relwithdebinfo debug
+	install(DIRECTORY ${CMAKE_SOURCE_DIR}/dist/media
+		DESTINATION ./
+		CONFIGURATIONS Release RelWithDebInfo Debug
 	)
  
-	install(files ${cmake_source_dir}/dist/bin/plugins.cfg
-		${cmake_source_dir}/dist/bin/resources.cfg
-		destination bin
-		configurations release relwithdebinfo debug
+	install(FILES ${CMAKE_SOURCE_DIR}/dist/bin/plugins.cfg
+		${CMAKE_SOURCE_DIR}/dist/bin/resources.cfg
+		DESTINATION bin
+		CONFIGURATIONS Release RelWithDebInfo Debug
 	)
  
-endif(unix)
+endif(UNIX)
  
